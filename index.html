@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RANDOMPHOTO</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    video, img {
+      max-width: 90vw;
+      max-height: 300px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin: 10px 0;
+    }
+    input, button {
+      font-size: 1.2rem;
+      padding: 10px;
+      margin: 5px;
+    }
+    .hidden { display: none; }
+    #login-error { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>RANDOMPHOTO</h1>
+
+  <!-- Login -->
+  <div id="login-section">
+    <input type="email" id="email" placeholder="Correo electrónico" /><br>
+    <input type="password" id="password" placeholder="Contraseña" /><br>
+    <button id="login-btn">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+
+  <!-- Cámara -->
+  <div id="camera-section" class="hidden">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" class="hidden"></canvas>
+    <img id="photo" alt="Foto tomada" class="hidden" />
+    
+    <div>
+      <button id="take-photo-btn">📸 Tomar Foto</button>
+      <button id="download-btn" class="hidden">⬇️ Descargar Foto</button>
+      <button id="reset-btn" class="hidden">🔁 Reiniciar Cámara</button>
+      <button id="logout-btn">🚪 Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <script>
+    const loginSection = document.getElementById('login-section');
+    const cameraSection = document.getElementById('camera-section');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const takePhotoBtn = document.getElementById('take-photo-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    let stream = null;
+
+    // Login manual con dos cuentas fijas
+    loginBtn.onclick = () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      loginError.textContent = '';
+
+      const users = {
+        'diego@random.com': 'Dg251102',
+        'afeni@random.com': '123456'
+      };
+
+      if (users[email] && users[email] === password) {
+        loginSection.classList.add('hidden');
+        cameraSection.classList.remove('hidden');
+        startCamera();
+      } else {
+        loginError.textContent = 'Correo o contraseña incorrectos.';
+      }
+    };
+
+    // Iniciar cámara
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        takePhotoBtn.disabled = false;
+        downloadBtn.classList.add('hidden');
+        resetBtn.classList.add('hidden');
+        photo.classList.add('hidden');
+      } catch (err) {
+        alert('No se pudo acceder a la cámara: ' + err.message);
+      }
+    }
+
+    // Detener cámara
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+    }
+
+    // Tomar foto
+    takePhotoBtn.onclick = () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/png');
+      photo.src = dataUrl;
+      photo.classList.remove('hidden');
+      downloadBtn.classList.remove('hidden');
+      resetBtn.classList.remove('hidden');
+      video.classList.add('hidden');
+      takePhotoBtn.disabled = true;
+      stopCamera();
+    };
+
+    // Descargar imagen
+    downloadBtn.onclick = () => {
+      const link = document.createElement('a');
+      link.href = photo.src;
+      link.download = 'foto.png';
+      link.click();
+    };
+
+    // Reiniciar cámara
+    resetBtn.onclick = () => {
+      startCamera();
+    };
+
+    // Cerrar sesión
+    logoutBtn.onclick = () => {
+      stopCamera();
+      emailInput.value = '';
+      passwordInput.value = '';
+      loginError.textContent = '';
+      cameraSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+    };
+  </script>
+
+</body>
+</html>
