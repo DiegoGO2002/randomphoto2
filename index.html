@@ -9,10 +9,10 @@
       margin: 0;
       min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: #000; /* Fondo negro */
+      background: #000;
       overflow: hidden;
       position: relative;
-      padding-top: 20px;
+      padding: 0;
     }
 
     .random-image {
@@ -43,7 +43,7 @@
 
     video {
       width: 100%;
-      max-width: 360px;
+      max-width: 380px;
       height: 640px;
       object-fit: cover;
       border-radius: 20px;
@@ -60,12 +60,13 @@
     .hidden { display: none; }
 
     #take-photo-btn {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       background-color: white;
       border: none;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     #logout-btn {
@@ -90,7 +91,7 @@
 </head>
 <body>
 
-  <!-- Imágenes aleatorias -->
+  <!-- Imágenes aleatorias SOLO ANTES DEL LOGIN -->
   <script>
     const imageUrls = [
       "https://preview.redd.it/tener-una-imagen-random-hace-que-la-publicaci%C3%B3n-tenga-m%C3%A1s-v0-6frn21rqrtoc1.jpeg?width=640&crop=smart&auto=webp&s=e109a6ff409c369a7be16d3b7d8c885fa69c8abf",
@@ -98,18 +99,19 @@
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhLrq4s4xwmnVwnLBDcBPH7CZY4SSto1DoDA&s"
     ];
 
-    const maxImages = Math.floor(Math.random() * 2) + 1; // 1 o 2
+    const maxImages = Math.floor(Math.random() * 2) + 1;
 
-    window.onload = () => {
+    window.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < maxImages; i++) {
         const img = document.createElement('img');
         img.src = imageUrls[Math.floor(Math.random() * imageUrls.length)];
         img.className = 'random-image';
         img.style.top = Math.random() * (window.innerHeight - 200) + 'px';
         img.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+        img.classList.add('login-deco');
         document.body.appendChild(img);
       }
-    };
+    });
   </script>
 
   <!-- Login -->
@@ -127,7 +129,6 @@
     <video id="video" autoplay playsinline></video>
     <canvas id="canvas" class="hidden"></canvas>
     <img id="photo" alt="Foto tomada" class="hidden" />
-    <br />
     <button id="take-photo-btn"></button>
   </div>
 
@@ -161,6 +162,8 @@
         loginSection.classList.add('hidden');
         cameraSection.classList.remove('hidden');
         startCamera();
+        // Eliminar imágenes de fondo
+        document.querySelectorAll('.login-deco').forEach(img => img.remove());
       } else {
         loginError.textContent = 'Correo o contraseña incorrectos.';
       }
